@@ -18,6 +18,13 @@ A desktop application to help librarians manage book inventory using Python and 
 - ISBN validation and duplicate prevention
 - Inventory tracking (total/available copies)
 - Advanced search and filtering
+
+### 👥 Module 3: Member Management
+- Member registration with complete profiles
+- Library card generation
+- Member search and editing
+- Membership status tracking
+
 ---
 
 ## 🛠️ Installation
