@@ -4,6 +4,8 @@ from tkinter import ttk, font
 from app.services.auth_service import AuthService
 from app.views.book_management_view import BookManagementView
 from app.views.inventory_reports_view import InventoryReportsView
+from app.views.member_registration_view import MemberRegistrationView
+from app.views.book_lending_view import BookLendingView
 
 
 class AdminPanelView(tk.Tk):
@@ -67,12 +69,12 @@ class AdminPanelView(tk.Tk):
         main_frame.pack(fill=tk.BOTH, expand=True, padx=40, pady=30)
 
         actions = [
-            ("📚", "Book Management", self._open_book_management),
             ("👤", "Member Registration", self._open_member_registration),
+            ("📚", "Book Management", self._open_book_management),
             ("📖", "Book Lending", self._open_book_lending),
             ("↩️", "Book Returns", self._open_book_returns),
-            ("📊", "Inventory Reports", self._open_inventory_reports),
             ("💰", "Fine Calculation", self._open_fine_calculation),
+            ("📊", "Inventory Reports", self._open_inventory_reports),
         ]
 
         for icon, text, command in actions:
@@ -113,13 +115,13 @@ class AdminPanelView(tk.Tk):
         InventoryReportsView(self)
 
     def _open_member_registration(self):
-        print("Opening Member Registration")
+        MemberRegistrationView(self, self.user)
 
     def _open_book_lending(self):
-        print("Opening Book Lending")
+        BookLendingView(self, self.user)
 
     def _open_book_returns(self):
-        print("Opening Book Returns")
+        print("Opening book returns")
 
     def _open_fine_calculation(self):
         print("Opening Fine Calculation")

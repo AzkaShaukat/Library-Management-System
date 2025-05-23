@@ -54,3 +54,4 @@ class DBHandler:
 
 # Singleton instance
 db = DBHandler()
+

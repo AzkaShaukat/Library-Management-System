@@ -10,8 +10,8 @@ class LoginView(tk.Toplevel):
         self.on_login_success = on_login_success
 
         self.title("Library Management System - Login")
-        self.geometry("1200x700")
-        self.minsize(1200, 700)
+        self.geometry("800x500")
+        self.minsize(800, 500)
         self.resizable(False, False)
 
         # Custom font
@@ -45,16 +45,16 @@ class LoginView(tk.Toplevel):
             text="📚",
             font=("Arial", 100),
             background='#f0f0f0'
-        ).pack(pady=(0, 20))
+        ).pack(pady=(0, 0))
 
         # Username
         ttk.Label(main_frame, text="Username:").pack()
-        self.username_entry = ttk.Entry(main_frame, font=self.custom_font, width=50)
+        self.username_entry = ttk.Entry(main_frame, font=self.custom_font, width=30)
         self.username_entry.pack(pady=5, ipady=5)
 
         # Password
         ttk.Label(main_frame, text="Password:").pack()
-        self.password_entry = ttk.Entry(main_frame, show="•", font=self.custom_font, width=50)
+        self.password_entry = ttk.Entry(main_frame, show="•", font=self.custom_font, width=30)
         self.password_entry.pack(pady=5, ipady=5)
 
         # Error label

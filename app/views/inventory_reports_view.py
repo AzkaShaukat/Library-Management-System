@@ -11,7 +11,7 @@ class InventoryReportsView(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Inventory Reports Dashboard")
-        self.geometry("1200x700")
+        self.geometry("1200x800")
         self._create_widgets()
         self._setup_styles()
 
@@ -100,47 +100,6 @@ class InventoryReportsView(tk.Toplevel):
         # Load data
         self._load_available_books()
 
-    def _create_statistics_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="📊 Statistics")
-
-        # Create frames for stats and graphs
-        stats_frame = ttk.Frame(tab, style='Stats.TFrame')
-        stats_frame.pack(fill=tk.X, padx=10, pady=10)
-
-        # Statistics labels
-        stats_data = self._get_statistics()
-
-        ttk.Label(stats_frame, text=f"📖 Total Books: {stats_data['total_books']}",
-                  font=('Helvetica', 12)).pack(side=tk.LEFT, padx=20)
-        ttk.Label(stats_frame, text=f"✅ Available: {stats_data['available_books']}",
-                  font=('Helvetica', 12)).pack(side=tk.LEFT, padx=20)
-        ttk.Label(stats_frame, text=f"🔖 Categories: {stats_data['total_categories']}",
-                  font=('Helvetica', 12)).pack(side=tk.LEFT, padx=20)
-        ttk.Label(stats_frame, text=f"👥 Authors: {stats_data['total_authors']}",
-                  font=('Helvetica', 12)).pack(side=tk.LEFT, padx=20)
-
-        # Graph frame
-        graph_frame = ttk.Frame(tab, style='Graph.TFrame')
-        graph_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-        # Create availability pie chart
-        fig, ax = plt.subplots(figsize=(6, 4), facecolor='white')
-        ax.pie(
-            [stats_data['available_books'],
-             stats_data['total_books'] - stats_data['available_books']],
-            labels=['Available', 'Checked Out'],
-            autopct='%1.1f%%',
-            colors=['#4CAF50', '#F44336'],
-            startangle=90
-        )
-        ax.set_title('Book Availability')
-
-        # Embed the pie chart
-        canvas = FigureCanvasTkAgg(fig, master=graph_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
     def _create_category_analysis_tab(self):
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="📈 Category Analysis")
@@ -155,7 +114,7 @@ class InventoryReportsView(tk.Toplevel):
         graph_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Create bar chart
-        fig, ax = plt.subplots(figsize=(6, 4), facecolor='white')
+        fig, ax = plt.subplots(figsize=(8, 6), facecolor='white')
         bars = ax.bar(categories, counts, color='#2196F3')
         ax.set_title('Books by Category')
         ax.set_ylabel('Number of Books')
