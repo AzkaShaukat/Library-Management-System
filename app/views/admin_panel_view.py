@@ -6,6 +6,8 @@ from app.views.book_management_view import BookManagementView
 from app.views.inventory_reports_view import InventoryReportsView
 from app.views.member_registration_view import MemberRegistrationView
 from app.views.book_lending_view import BookLendingView
+from app.views.book_return_view import BookReturnView
+from app.views.fine_calculation_view import FineManagementView
 
 
 class AdminPanelView(tk.Tk):
@@ -121,7 +123,7 @@ class AdminPanelView(tk.Tk):
         BookLendingView(self, self.user)
 
     def _open_book_returns(self):
-        print("Opening book returns")
+        BookReturnView(self)
 
     def _open_fine_calculation(self):
-        print("Opening Fine Calculation")
+        FineManagementView(self)

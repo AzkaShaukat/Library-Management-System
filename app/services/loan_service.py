@@ -1,6 +1,7 @@
 from app.database.db_handler import db
+from datetime import datetime, timedelta
+from app.database.db_handler import db
 from app.models.loan import Loan
-from datetime import datetime, timedelta  # Add timedelta to the import
 
 
 class LoanService:
@@ -87,13 +88,64 @@ class LoanService:
 
     @staticmethod
     def return_loan(loan_id):
+        """Process book return and calculate any fines"""
+        # Get loan details
+        loan_query = """
+                SELECT * FROM loans 
+                WHERE loan_id = %s AND return_date IS NULL
+            """
+        loan_result = db.execute_query(loan_query, (loan_id,), fetch=True)
+
+        if not loan_result:
+            return False
+
+        loan = loan_result[0]
+        return_date = datetime.now()
+        fine_amount = 0.0
+
+        # Calculate fine if overdue
+        if loan['due_date'] and return_date > loan['due_date']:
+            days_overdue = (return_date - loan['due_date']).days
+            fine_amount = days_overdue * 5.0  # $5 per day
+
+        # Update loan record
+        update_query = """
+                UPDATE loans SET
+                return_date = %s,
+                loan_status = 'returned',
+                fine_amount = %s,
+                fine_status = CASE WHEN %s > 0 THEN 'pending' ELSE 'none' END
+                WHERE loan_id = %s
+            """
+
+        # Update book available copies
+        book_query = "UPDATE books SET available_copies = available_copies + 1 WHERE book_id = %s"
+
+        try:
+            db.execute_query("START TRANSACTION")
+            db.execute_query(update_query, (return_date, fine_amount, fine_amount, loan_id))
+            db.execute_query(book_query, (loan['book_id'],))
+            db.execute_query("COMMIT")
+            return True
+        except Exception as e:
+            db.execute_query("ROLLBACK")
+            print(f"Error returning loan: {e}")
+            return False
+
+    @staticmethod
+    def get_loans_with_fines():
+        """Get all loans with fines (pending or paid)"""
         query = """
-            UPDATE loans SET
-            return_date = CURRENT_TIMESTAMP,
-            loan_status = 'returned'
-            WHERE loan_id = %s
-        """
-        return db.execute_query(query, (loan_id,))
+                SELECT l.*, b.title, 
+                       CONCAT(m.first_name, ' ', m.last_name) AS member_name
+                FROM loans l
+                JOIN books b ON l.book_id = b.book_id
+                JOIN members m ON l.member_id = m.member_id
+                WHERE l.fine_amount > 0
+                ORDER BY l.fine_status, l.due_date
+            """
+        results = db.execute_query(query, fetch=True)
+        return results if results else []
 
     @staticmethod
     def get_member_loan_history(member_id):

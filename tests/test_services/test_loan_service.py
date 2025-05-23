@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime, timedelta
 from app.services.loan_service import LoanService
 
-
 @pytest.fixture
 def mock_db():
     with patch('app.services.loan_service.db') as mock:
@@ -78,3 +77,60 @@ def test_get_active_loans():
         assert len(loans) == 1
         assert loans[0]['title'] == 'Test Book'
         assert loans[0]['return_date'] is None
+
+
+@pytest.fixture
+def mock_db():
+    with patch('app.services.loan_service.db') as mock:
+        yield mock
+
+
+def test_return_loan_with_fine(mock_db):
+    """Test returning an overdue loan calculates fine"""
+    # Mock database responses
+    mock_db.execute_query.side_effect = [
+        [{
+            'loan_id': 1,
+            'book_id': 101,
+            'due_date': datetime.now() - timedelta(days=3)
+        }],  # Loan query
+        None,  # Update loan
+        None  # Update book
+    ]
+
+    result = LoanService.return_loan(1)
+    assert result is True
+    # Verify fine amount was calculated (3 days * $5 = $15)
+    assert "fine_amount = 15.0" in mock_db.execute_query.call_args_list[1][0][0]
+
+
+def test_return_loan_no_fine(mock_db):
+    """Test returning a loan on time has no fine"""
+    mock_db.execute_query.side_effect = [
+        [{
+            'loan_id': 1,
+            'book_id': 101,
+            'due_date': datetime.now() + timedelta(days=1)
+        }],
+        None,
+        None
+    ]
+
+    result = LoanService.return_loan(1)
+    assert result is True
+    assert "fine_amount = 0.0" in mock_db.execute_query.call_args_list[1][0][0]
+
+
+def test_get_loans_with_fines(mock_db):
+    """Test retrieving loans with fines"""
+    test_data = [{
+        'loan_id': 1,
+        'fine_amount': 10.0,
+        'fine_status': 'pending',
+        'title': 'Test Book'
+    }]
+    mock_db.execute_query.return_value = test_data
+
+    loans = LoanService.get_loans_with_fines()
+    assert len(loans) == 1
+    assert loans[0]['fine_amount'] == 10.0

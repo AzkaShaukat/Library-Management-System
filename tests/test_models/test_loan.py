@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from app.models.loan import Loan
+import pytest
+
 
 
 def test_loan_creation_with_dates():
@@ -47,3 +49,42 @@ def test_loan_to_dict():
     assert loan_dict['loan_id'] == 1
     assert loan_dict['book_id'] == 101
     assert 'issue_date' in loan_dict
+
+
+def test_loan_fine_calculation():
+    """Test fine calculation for overdue loans"""
+    # Create an overdue loan
+    due_date = datetime.now() - timedelta(days=5)
+    loan = Loan(
+        loan_id=1,
+        due_date=due_date,
+        return_date=datetime.now()
+    )
+
+    # Should be 5 days overdue at $5/day = $25
+    assert loan.calculate_fine() == 25.0
+
+
+def test_no_fine_for_early_return():
+    """Test no fine is calculated for books returned on time"""
+    due_date = datetime.now() + timedelta(days=2)
+    loan = Loan(
+        loan_id=1,
+        due_date=due_date,
+        return_date=datetime.now()
+    )
+
+    assert loan.calculate_fine() == 0.0
+
+
+def test_loan_to_dict_includes_fine_fields():
+    """Test that to_dict() includes fine-related fields"""
+    loan = Loan(
+        loan_id=1,
+        fine_amount=10.0,
+        fine_status='pending'
+    )
+
+    loan_dict = loan.to_dict()
+    assert loan_dict['fine_amount'] == 10.0
+    assert loan_dict['fine_status'] == 'pending'
