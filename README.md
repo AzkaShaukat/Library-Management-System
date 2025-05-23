@@ -1,16 +1,34 @@
 # 📚 Library Management System
 
-A desktop application to help librarians manage book inventory, members, lending, returns, and fines using Python and MySQL.
+A desktop application to help librarians manage book inventory using Python and MySQL.
 
 ---
 
-## ✅ Module 1: Authentication & Admin Panel
+## 🚀 Current Features
 
-This module includes:
-- User authentication with username and password.
-- Admin dashboard UI with navigation to core features.
-- Tkinter GUI with user-friendly design.
-- MySQL database connection via XAMPP.
+### ✅ Module 1: Authentication & Admin Panel
+- Secure login system with password hashing (bcrypt)
+- Role-based access (Admin/Librarian)
+- Modern admin dashboard with navigation
+- MySQL database integration via XAMPP
+- Responsive Tkinter GUI with beautiful styling
 
-### 🔐 Sample Credentials
+### 📖 Module 2: Book Management
+- Add/Edit/Delete books with full details
+- ISBN validation and duplicate prevention
+- Inventory tracking (total/available copies)
+- Advanced search and filtering
+---
 
+## 🛠️ Installation
+
+1. **Prerequisites**:
+   - Python 3.8+
+   - XAMPP (for MySQL)
+   - Git (optional)
+
+2. **Setup**:
+   ```bash
+   git clone https://github.com/your-repo/library-management-system.git
+   cd library-management-system
+   pip install -r requirements.txt
