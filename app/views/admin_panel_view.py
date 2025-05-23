@@ -2,6 +2,8 @@
 import tkinter as tk
 from tkinter import ttk, font
 from app.services.auth_service import AuthService
+from app.views.book_management_view import BookManagementView
+from app.views.inventory_reports_view import InventoryReportsView
 
 
 class AdminPanelView(tk.Tk):
@@ -11,15 +13,15 @@ class AdminPanelView(tk.Tk):
         self.on_logout = on_logout
 
         self.title(f"Library Management System - {user.full_name}")
-        self.geometry("900x650")
-        self.minsize(800, 600)
+        self.geometry("1200x700")
+        self.minsize(1200, 700)
 
         # Custom fonts
-        self.title_font = font.Font(family="Helvetica", size=18, weight="bold")
-        self.button_font = font.Font(family="Helvetica", size=13)
-        self.list_font = font.Font(family="Helvetica", size=14)
-        self.icon_font = font.Font(family="Helvetica", size=50)  # Bigger icon font
-        self.small_font = font.Font(family="Helvetica", size=10)
+        self.title_font = font.Font(family="Helvetica", size=20, weight="bold")
+        self.button_font = font.Font(family="Helvetica", size=14)
+        self.list_font = font.Font(family="Helvetica", size=16)
+        self.icon_font = font.Font(family="Helvetica", size=70)  # Bigger icon font
+        self.small_font = font.Font(family="Helvetica", size=14)
 
         # Configure styles
         self.style = ttk.Style()
@@ -105,7 +107,10 @@ class AdminPanelView(tk.Tk):
         self.on_logout()
 
     def _open_book_management(self):
-        print("Opening Book Management")
+        BookManagementView(self, self.user)
+
+    def _open_inventory_reports(self):
+        InventoryReportsView(self)
 
     def _open_member_registration(self):
         print("Opening Member Registration")
@@ -115,9 +120,6 @@ class AdminPanelView(tk.Tk):
 
     def _open_book_returns(self):
         print("Opening Book Returns")
-
-    def _open_inventory_reports(self):
-        print("Opening Inventory Reports")
 
     def _open_fine_calculation(self):
         print("Opening Fine Calculation")
