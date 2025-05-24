@@ -23,8 +23,6 @@ class LibraryManagementSystem:
         self.admin_panel = AdminPanelView(user, self._on_logout)
 
     def _on_logout(self):
-        if self.admin_panel:
-            self.admin_panel.destroy()
         self.current_user = None
         self._show_login()
 

@@ -1,8 +1,15 @@
-
-python==3.11
+# Core Dependencies
+python>=3.9
 mysql-connector-python==8.0.33
 bcrypt==4.1.2
 python-dotenv==1.0.0
+
+# UI & Visualization
 matplotlib==3.7.1
 Pillow==9.5.0
+pip install customtkinter
+
+# Testing
+pytest==7.4.0
+unittest2==1.1.0
 
