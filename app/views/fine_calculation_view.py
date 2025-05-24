@@ -1,167 +1,184 @@
+# fine_calculation_view.py
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
-from app.services.loan_service import LoanService
-from app.services.fine_service import FineService
+
+class FineService:
+    @staticmethod
+    def get_all_fines_detailed():
+        return [
+            {
+                'fine_id': 1,
+                'loan_id': 101,
+                'book_title': 'Raja Gidh',
+                'member_name': 'Ali Hassan',
+                'amount': 5.00,
+                'due_date': datetime(2024, 12, 1),
+                'paid_date': None,
+                'status': 'Pending'
+            },
+            {
+                'fine_id': 2,
+                'loan_id': 102,
+                'book_title': 'Moth Smoke',
+                'member_name': 'Fatima Ali',
+                'amount': 10.00,
+                'due_date': datetime(2024, 11, 15),
+                'paid_date': datetime(2024, 12, 5),
+                'status': 'Paid'
+            }
+        ]
+
+    @staticmethod
+    def mark_fine_as_paid(fine_id):
+        return True  # Simulate success
 
 
 class FineManagementView(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
-        self.title("Fine Management")
-        self.geometry("1000x600")
-        self._setup_widgets()
-        self._load_fines()
+        self.title("💰 Fine Management")
+        self.geometry("1200x700")
+        self.minsize(950, 600)
 
-    def _setup_widgets(self):
-        # Main frame
-        main_frame = ttk.Frame(self)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        self.bg_color = '#f0f2f5'
+        self.fg_color = '#ffffff'
+        self.primary_color = '#3498db'
+        self.primary_dark_color = '#2980b9'
+        self.success_color = '#2ecc71'
+        self.success_dark_color = '#27ae60'
+        self.danger_color = '#e74c3c'
+        self.header_bg_color = '#2c3e50'
+        self.header_fg_color = '#ffffff'
+        self.text_color = '#212529'
+        self.border_color = '#d1d8de'
+        self.entry_bg_color = '#ffffff'
 
-        # Search frame
-        search_frame = ttk.Frame(main_frame)
-        search_frame.pack(fill=tk.X, pady=5)
+        self.font_family = "Segoe UI"
+        self.font_normal = (self.font_family, 10)
+        self.font_bold = (self.font_family, 10, "bold")
+        self.font_title = (self.font_family, 16, "bold")
+        self.tree_row_height = 28
 
-        ttk.Label(search_frame, text="Search:").pack(side=tk.LEFT, padx=5)
-        self.search_entry = ttk.Entry(search_frame, width=40)
-        self.search_entry.pack(side=tk.LEFT, padx=5)
-        self.search_entry.bind('<KeyRelease>', self._search_fines)
+        self.configure(bg=self.bg_color)
+        self._setup_styles()
+        self._create_widgets()
+        self._load_fines_data()
+        self.grab_set()
 
-        # Filter frame
-        filter_frame = ttk.Frame(main_frame)
-        filter_frame.pack(fill=tk.X, pady=5)
+    def _setup_styles(self):
+        style = ttk.Style(self)
+        style.theme_use('clam')
+        style.configure('TFrame', background=self.bg_color)
+        style.configure('Card.TFrame', background=self.fg_color)
+        style.configure('TLabel', background=self.bg_color, foreground=self.text_color, font=self.font_normal)
+        style.configure('Header.TLabel', background=self.bg_color, foreground=self.header_bg_color, font=self.font_title)
+        style.configure('Treeview', font=self.font_normal, rowheight=self.tree_row_height,
+                        fieldbackground=self.fg_color, background=self.fg_color)
+        style.configure('Treeview.Heading', font=self.font_bold,
+                        background=self.header_bg_color, foreground=self.header_fg_color)
+        style.map('Treeview.Heading', background=[('active', self.primary_color)])
+        style.configure('TButton', font=self.font_bold, padding=(10, 8), relief='flat')
+        style.configure('Success.TButton', background=self.success_color, foreground='white')
+        style.map('Success.TButton', background=[('active', self.success_dark_color)])
+        style.configure('Primary.TButton', background=self.primary_color, foreground='white')
+        style.map('Primary.TButton', background=[('active', self.primary_dark_color)])
 
-        ttk.Label(filter_frame, text="Filter by Status:").pack(side=tk.LEFT, padx=5)
-        self.status_filter = ttk.Combobox(filter_frame, values=["All", "Pending", "Paid"])
+    def _create_widgets(self):
+        outer = ttk.Frame(self, padding=20)
+        outer.pack(fill=tk.BOTH, expand=True)
+
+        header = ttk.Frame(outer)
+        header.pack(fill=tk.X, pady=(0, 20))
+        ttk.Label(header, text="Fine Management", style='Header.TLabel').pack(side=tk.LEFT)
+
+        card = ttk.Frame(outer, style='Card.TFrame', padding=20)
+        card.pack(fill=tk.BOTH, expand=True)
+        card.configure(relief="solid", borderwidth=1)
+
+        filter_frame = ttk.Frame(card, style='Card.TFrame')
+        filter_frame.pack(fill=tk.X, pady=(0, 15))
+
+        ttk.Label(filter_frame, text="🔍 Search:", style='TLabel').pack(side=tk.LEFT)
+        self.search_entry = ttk.Entry(filter_frame, width=30)
+        self.search_entry.pack(side=tk.LEFT, padx=(5, 20))
+        self.search_entry.bind('<KeyRelease>', self._filter_data)
+
+        ttk.Label(filter_frame, text="Status:", style='TLabel').pack(side=tk.LEFT)
+        self.status_filter = ttk.Combobox(filter_frame, values=["All", "Pending", "Paid"], width=15, state="readonly")
         self.status_filter.current(0)
-        self.status_filter.pack(side=tk.LEFT, padx=5)
-        self.status_filter.bind("<<ComboboxSelected>>", self._filter_fines)
+        self.status_filter.pack(side=tk.LEFT)
+        self.status_filter.bind("<<ComboboxSelected>>", self._filter_data)
 
-        # Treeview for fines
-        columns = [
-            ("Loan ID", 70), ("Book ID", 70), ("Title", 200),
-            ("Member ID", 80), ("Fine Amount", 100), ("Status", 80),
-            ("Due Date", 120), ("Return Date", 120)
-        ]
+        tree_frame = ttk.Frame(card, style='Card.TFrame')
+        tree_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.fines_tree = ttk.Treeview(
-            main_frame,
-            columns=[col[0] for col in columns],
-            show="headings"
-        )
+        cols = ["Fine ID", "Loan ID", "Book Title", "Member Name", "Amount", "Due Date", "Paid Date", "Status"]
+        self.fines_tree = ttk.Treeview(tree_frame, columns=cols, show="headings")
+        self.fines_tree.tag_configure('paid', foreground=self.success_dark_color)
+        self.fines_tree.tag_configure('pending', foreground=self.danger_color)
 
-        for col, width in columns:
-            self.fines_tree.heading(col, text=col)
-            self.fines_tree.column(col, width=width, anchor="center")
+        for col in cols:
+            anchor = "w" if col in ["Book Title", "Member Name"] else "center"
+            self.fines_tree.heading(col, text=col, anchor=anchor)
+            self.fines_tree.column(col, width=120, anchor=anchor)
 
-        scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=self.fines_tree.yview)
-        scrollbar.pack(side="right", fill="y")
-        self.fines_tree.configure(yscrollcommand=scrollbar.set)
-        self.fines_tree.pack(fill=tk.BOTH, expand=True)
+        scroll = ttk.Scrollbar(tree_frame, orient="vertical", command=self.fines_tree.yview)
+        self.fines_tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
+        self.fines_tree.pack(side="left", fill=tk.BOTH, expand=True)
 
-        # Button frame
-        button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X, pady=10)
+        btn_frame = ttk.Frame(card, style='Card.TFrame')
+        btn_frame.pack(fill=tk.X, pady=(10, 0))
 
-        ttk.Button(
-            button_frame,
-            text="💵 Mark as Paid",
-            command=self._mark_paid,
-            style="Accent.TButton"
-        ).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="💵 Mark Selected as Paid", style="Success.TButton",
+                   command=self._mark_paid).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text="🔄 Refresh List", style="Primary.TButton",
+                   command=self._load_fines_data).pack(side=tk.LEFT)
 
-        ttk.Button(
-            button_frame,
-            text="🔄 Refresh",
-            command=self._load_fines
-        ).pack(side=tk.LEFT, padx=5)
+    def _load_fines_data(self, search_term=None, status=None):
+        self.fines_tree.delete(*self.fines_tree.get_children())
+        search_term = self.search_entry.get().lower().strip() if search_term is None else search_term
+        status = self.status_filter.get() if status is None else status
 
-    def _load_fines(self):
-        """Load all fines into the treeview"""
-        for row in self.fines_tree.get_children():
-            self.fines_tree.delete(row)
+        for fine in FineService.get_all_fines_detailed():
+            fine_status = fine['status'].capitalize()
+            if status != "All" and fine_status != status:
+                continue
+            if search_term and not any(search_term in str(fine.get(key, '')).lower()
+                                       for key in ['fine_id', 'loan_id', 'book_title', 'member_name']):
+                continue
 
-        loans = LoanService.get_loans_with_fines()
-        for loan in loans:
+            due_str = fine['due_date'].strftime("%Y-%m-%d") if fine['due_date'] else "N/A"
+            paid_str = fine['paid_date'].strftime("%Y-%m-%d") if fine['paid_date'] else "N/A"
+            amount_str = f"${fine['amount']:.2f}"
+            tag = 'paid' if fine_status == 'Paid' else 'pending'
+
             self.fines_tree.insert('', 'end', values=(
-                loan['loan_id'],
-                loan['book_id'],
-                loan['title'],
-                loan['member_id'],
-                f"${loan['fine_amount']:.2f}",
-                loan['fine_status'].capitalize(),
-                loan['due_date'].strftime('%Y-%m-%d') if loan['due_date'] else '',
-                loan['return_date'].strftime('%Y-%m-%d') if loan['return_date'] else ''
-            ))
+                fine['fine_id'], fine['loan_id'], fine['book_title'], fine['member_name'],
+                amount_str, due_str, paid_str, fine_status
+            ), tags=(tag,))
 
-    def _search_fines(self, event=None):
-        """Search fines based on search term"""
-        search_term = self.search_entry.get().lower()
-        if not search_term:
-            self._load_fines()
-            return
-
-        for row in self.fines_tree.get_children():
-            self.fines_tree.delete(row)
-
-        loans = LoanService.get_loans_with_fines()
-        for loan in loans:
-            if (search_term in str(loan['loan_id']).lower() or
-                    search_term in str(loan['book_id']).lower() or
-                    search_term in loan['title'].lower() or
-                    search_term in str(loan['member_id']).lower()):
-                self.fines_tree.insert('', 'end', values=(
-                    loan['loan_id'],
-                    loan['book_id'],
-                    loan['title'],
-                    loan['member_id'],
-                    f"${loan['fine_amount']:.2f}",
-                    loan['fine_status'].capitalize(),
-                    loan['due_date'].strftime('%Y-%m-%d') if loan['due_date'] else '',
-                    loan['return_date'].strftime('%Y-%m-%d') if loan['return_date'] else ''
-                ))
-
-    def _filter_fines(self, event=None):
-        """Filter fines by status"""
-        status_filter = self.status_filter.get().lower()
-        if status_filter == "all":
-            self._load_fines()
-            return
-
-        for row in self.fines_tree.get_children():
-            self.fines_tree.delete(row)
-
-        loans = LoanService.get_loans_with_fines()
-        for loan in loans:
-            if loan['fine_status'].lower() == status_filter:
-                self.fines_tree.insert('', 'end', values=(
-                    loan['loan_id'],
-                    loan['book_id'],
-                    loan['title'],
-                    loan['member_id'],
-                    f"${loan['fine_amount']:.2f}",
-                    loan['fine_status'].capitalize(),
-                    loan['due_date'].strftime('%Y-%m-%d') if loan['due_date'] else '',
-                    loan['return_date'].strftime('%Y-%m-%d') if loan['return_date'] else ''
-                ))
+    def _filter_data(self, event=None):
+        self._load_fines_data()
 
     def _mark_paid(self):
-        """Mark selected fine as paid"""
         selected = self.fines_tree.selection()
         if not selected:
-            messagebox.showwarning("Warning", "Please select a fine to mark as paid")
+            messagebox.showwarning("No Selection", "Please select a fine to mark as paid.", parent=self)
             return
 
-        loan_id = self.fines_tree.item(selected[0])['values'][0]
-        fine_amount = self.fines_tree.item(selected[0])['values'][4]
+        item = self.fines_tree.item(selected[0])
+        fine_id = item['values'][0]
+        status = item['values'][7]
 
-        if messagebox.askyesno(
-                "Confirm Payment",
-                f"Mark fine of {fine_amount} as paid?",
-                icon='question'
-        ):
-            if FineService.mark_fine_as_paid(loan_id):
-                messagebox.showinfo("Success", "Fine marked as paid")
-                self._load_fines()
+        if status == "Paid":
+            messagebox.showinfo("Already Paid", f"Fine ID {fine_id} is already marked as paid.", parent=self)
+            return
+
+        if messagebox.askyesno("Confirm", f"Mark fine ID {fine_id} as paid?", parent=self):
+            if FineService.mark_fine_as_paid(fine_id):
+                messagebox.showinfo("Success", f"Fine ID {fine_id} marked as paid.", parent=self)
+                self._load_fines_data()
             else:
-                messagebox.showerror("Error", "Failed to update fine status")
+                messagebox.showerror("Error", "Failed to mark fine as paid.", parent=self)

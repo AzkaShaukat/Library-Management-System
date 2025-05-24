@@ -1,7 +1,8 @@
-# app/views/admin_panel_view.py
+# admin_panel_view.py
 import tkinter as tk
 from tkinter import ttk, font
 from app.services.auth_service import AuthService
+from app.views.login_view import LoginView
 from app.views.book_management_view import BookManagementView
 from app.views.inventory_reports_view import InventoryReportsView
 from app.views.member_registration_view import MemberRegistrationView
@@ -16,99 +17,123 @@ class AdminPanelView(tk.Tk):
         self.user = user
         self.on_logout = on_logout
 
-        self.title(f"Library Management System - {user.full_name}")
-        self.geometry("1200x700")
-        self.minsize(1200, 700)
+        # Theme Colors
+        self.bg_color = '#f0f2f5'
+        self.fg_color = '#ffffff'
+        self.primary_color = '#3498db'
+        self.primary_dark_color = '#2980b9'
+        self.header_bg_color = '#2c3e50'
+        self.header_fg_color = '#ffffff'
+        self.success_color = '#2ecc71'
+        self.danger_color = '#e74c3c'
+        self.text_color = '#212529'
+        self.border_color = '#d1d8de'
 
-        # Custom fonts
-        self.title_font = font.Font(family="Helvetica", size=20, weight="bold")
-        self.button_font = font.Font(family="Helvetica", size=14)
-        self.list_font = font.Font(family="Helvetica", size=16)
-        self.icon_font = font.Font(family="Helvetica", size=70)  # Bigger icon font
-        self.small_font = font.Font(family="Helvetica", size=14)
+        # Fonts
+        self.font_family = "Segoe UI"
+        self.font_normal = (self.font_family, 10)
+        self.font_bold = (self.font_family, 10, "bold")
+        self.font_large_bold = (self.font_family, 12, "bold")
+        self.font_title = (self.font_family, 20, "bold")
+        self.font_button = (self.font_family, 11, "bold")
+        self.font_action_text = (self.font_family, 14)
+        self.font_action_icon = (self.font_family, 48)
 
-        # Configure styles
-        self.style = ttk.Style()
-        self.style.configure('Header.TFrame', background='#2c3e50')
-        self.style.configure('Header.TLabel', background='#2c3e50', foreground='white')
-        self.style.configure('Action.TLabel', font=self.list_font)
-        self.style.configure('TButton', font=self.button_font)
+        self.title(f"Library Management System - Admin Panel ({user.full_name})")
+        self.geometry("1200x750")
+        self.minsize(1000, 700)
+        self.configure(bg=self.bg_color)
 
+        self._configure_styles()
         self._create_widgets()
 
+    def _configure_styles(self):
+        self.style = ttk.Style(self)
+        self.style.theme_use('clam')
+
+        # Configure styles
+        self.style.configure('TFrame', background=self.bg_color)
+        self.style.configure('Card.TFrame', background=self.fg_color)
+        self.style.configure('TLabel', background=self.bg_color,
+                             foreground=self.text_color, font=self.font_normal)
+        self.style.configure('Header.TLabel', background=self.header_bg_color,
+                             foreground=self.header_fg_color, font=self.font_title)
+        self.style.configure('Action.TLabel', font=self.font_action_text,
+                             background=self.fg_color, foreground=self.text_color)
+        self.style.configure('Action.Icon.TLabel', font=self.font_action_icon,
+                             background=self.fg_color, foreground=self.primary_color)
+
+        # Button styles
+        self.style.configure('TButton', font=self.font_button, padding=10)
+        self.style.configure('Primary.TButton', background=self.primary_color,
+                             foreground=self.fg_color)
+        self.style.map('Primary.TButton',
+                       background=[('active', self.primary_dark_color)])
+        self.style.configure('Danger.TButton', background=self.danger_color,
+                             foreground=self.fg_color)
+        self.style.map('Danger.TButton',
+                       background=[('active', '#c0392b')])
+
     def _create_widgets(self):
-        # Header
-        header_frame = ttk.Frame(self, style='Header.TFrame')
+        # Header frame
+        header_frame = ttk.Frame(self, style='Header.TFrame', padding=(20, 15))
         header_frame.pack(fill=tk.X)
 
-        ttk.Label(
-            header_frame,
-            text="Library Management System",
-            style='Header.TLabel',
-            font=self.title_font
-        ).pack(side=tk.LEFT, padx=20, pady=15)
+        ttk.Label(header_frame, text="Library Management System",
+                  style='Header.TLabel').pack(side=tk.LEFT)
 
+        # User info frame
         user_frame = ttk.Frame(header_frame, style='Header.TFrame')
         user_frame.pack(side=tk.RIGHT, padx=20)
 
-        ttk.Label(
-            user_frame,
-            text=f"Welcome, {self.user.full_name}",
-            style='Header.TLabel',
-            font=self.small_font
-        ).pack(side=tk.LEFT, padx=5)
+        ttk.Label(user_frame, text=f"Welcome, {self.user.full_name}",
+                  style='Header.TLabel', font=self.font_large_bold).pack(side=tk.LEFT, padx=10)
 
-        exit_btn = ttk.Button(
-            user_frame,
-            text="Exit",
-            command=self._exit,
-            style='TButton'
-        )
-        exit_btn.pack(side=tk.LEFT, padx=5)
+        ttk.Button(user_frame, text="Logout", command=self._exit,
+                   style='Danger.TButton').pack(side=tk.LEFT)
 
-        # Main content frame
-        main_frame = ttk.Frame(self)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=40, pady=30)
+        # Main content area
+        content_frame = ttk.Frame(self)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
+        # Create action cards grid (3 columns)
         actions = [
             ("👤", "Member Registration", self._open_member_registration),
             ("📚", "Book Management", self._open_book_management),
-            ("📖", "Book Lending", self._open_book_lending),
-            ("↩️", "Book Returns", self._open_book_returns),
-            ("💰", "Fine Calculation", self._open_fine_calculation),
-            ("📊", "Inventory Reports", self._open_inventory_reports),
+            ("📤", "Book Lending", self._open_book_lending),
+            ("📥", "Book Returns", self._open_book_returns),
+            ("💰", "Fine Management", self._open_fine_calculation),
+            ("📊", "Inventory Reports", self._open_inventory_reports)
         ]
 
-        for icon, text, command in actions:
-            action_frame = tk.Frame(
-                main_frame,
-                bg="white",
-                bd=2,
-                relief="solid",
-                highlightbackground="gray",
-                highlightthickness=1
-            )
-            action_frame.pack(fill=tk.X, pady=15, ipadx=15, ipady=15)
+        for i, (icon, text, command) in enumerate(actions):
+            row, col = divmod(i, 3)  # 3 columns
 
-            label = ttk.Label(
-                action_frame,
-                text=f"{icon}  {text}",
-                style='Action.TLabel',
-                background="white"
-            )
-            label.pack(side=tk.LEFT, padx=20)
+            card_frame = ttk.Frame(content_frame, style='Card.TFrame',
+                                   padding=20, relief='solid', borderwidth=1)
+            card_frame.grid(row=row, column=col, padx=15, pady=15, sticky="nsew")
 
-            action_btn = ttk.Button(
-                action_frame,
-                text="Open",
-                command=command
-            )
-            action_btn.pack(side=tk.RIGHT, padx=20)
+            # Icon
+            ttk.Label(card_frame, text=icon, style='Action.Icon.TLabel'
+                      ).pack(pady=(0, 10))
+
+            # Action text
+            ttk.Label(card_frame, text=text, style='Action.TLabel',
+                      font=self.font_large_bold).pack(pady=(0, 15))
+
+            # Action button
+            ttk.Button(card_frame, text="Open", command=command,
+                       style='Primary.TButton').pack()
+
+            # Configure grid weights
+            content_frame.columnconfigure(col, weight=1)
+            content_frame.rowconfigure(row, weight=1)
 
     def _exit(self):
         AuthService.logout()
         self.destroy()
         self.on_logout()
+        BookManagementView(self)
 
     def _open_book_management(self):
         BookManagementView(self, self.user)
