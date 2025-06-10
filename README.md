@@ -7,12 +7,6 @@ A desktop application to help librarians manage book inventory using Python and 
 ## 🚀 Current Features
 
 
-### 📖 Module 2: Book Management
-- Add/Edit/Delete books with full details
-- ISBN validation and duplicate prevention
-- Inventory tracking (total/available copies)
-- Advanced search and filtering
-
 ### 👥 Module 3: Member Management & Lending
 - Member registration system
 - Book lending with due dates
