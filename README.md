@@ -6,12 +6,6 @@ A desktop application to help librarians manage book inventory using Python and 
 
 ## 🚀 Current Features
 
-### ✅ Module 1: Authentication & Admin Panel
-- Secure login system with password hashing (bcrypt)
-- Role-based access (Admin/Librarian)
-- Modern admin dashboard with navigation
-- MySQL database integration via XAMPP
-- Responsive Tkinter GUI with beautiful styling
 
 ### 📖 Module 2: Book Management
 - Add/Edit/Delete books with full details
