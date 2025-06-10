@@ -1,4 +1,4 @@
-# Library Management System
+# Library Management Syste
 
 A desktop application to help librarians manage book inventory using Python and MySQL.
 
